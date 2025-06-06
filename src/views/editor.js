@@ -19,7 +19,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
 
 import EditorTab from "../components/editortab.js";
-import Title from '../components/title.js';
+import Title from "../components/title.js";
 import data from "../Data.js";
 
 const documentTemplate = (
@@ -47,10 +47,21 @@ const documentTemplate = (
  </text>
 </TEI>`;
 
-function EditorView() {
+function EditorView({ language, onLanguageChanged }) {
   const [selectedLanguage, setSelectedLanguage] = React.useState(
-    data.getDocumentLanguages()[0],
+    language || data.getDocumentLanguages()[0],
   );
+
+  React.useEffect(() => {
+    if (language) {
+      setSelectedLanguage(language);
+    }
+  }, [language]);
+
+  const changeLanguage = (lang) => {
+    if (onLanguageChanged) onLanguageChanged(lang);
+    setSelectedLanguage(lang);
+  };
   const [deletingLanguage, setDeletingLanguage] = React.useState("");
   const [addLanguageDialogShown, setAddLanguageDialogShown] =
     React.useState(false);
@@ -70,7 +81,7 @@ function EditorView() {
 
     if (deletingLanguage === selectedLanguage) {
       const languages = data.getDocumentLanguages();
-      setSelectedLanguage(languages.length ? languages[0] : "");
+      changeLanguage(languages.length ? languages[0] : "");
     }
   }
 
@@ -90,7 +101,7 @@ function EditorView() {
         addingLanguage,
         documentTemplate(addingLanguage),
       );
-      setSelectedLanguage(addingLanguage);
+      changeLanguage(addingLanguage);
     }
   }
 
@@ -124,7 +135,7 @@ function EditorView() {
               }
             >
               <ListItemButton
-                onClick={() => setSelectedLanguage(language)}
+                onClick={() => changeLanguage(language)}
                 selected={selectedLanguage === language}
               >
                 <ListItemText primary={language} />

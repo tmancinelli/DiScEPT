@@ -26,10 +26,12 @@ class AlignmentView extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      tabALanguage: "",
+      // Initialize languages from props so that selections can be preserved
+      // when navigating away from this view and coming back.
+      tabALanguage: props.tabALanguage || "",
       tabASelections: [],
       tabARefreshNeeded: 0,
-      tabBLanguage: "",
+      tabBLanguage: props.tabBLanguage || "",
       tabBSelections: [],
       tabBRefreshNeeded: 0,
       listRefreshNeeded: 0,
@@ -204,6 +206,9 @@ class AlignmentView extends React.Component {
       const newState = {};
       newState[id === "tabA" ? "tabALanguage" : "tabBLanguage"] = language;
       this.setState(newState);
+      if (this.props.onLanguageChanged) {
+        this.props.onLanguageChanged(id, language);
+      }
     };
 
     const updateSelection = (id, domElm, teiElm, rootElm) => {
@@ -281,6 +286,7 @@ class AlignmentView extends React.Component {
                 <Grid item xs={6}>
                   <AlignTab
                     id="tabA"
+                    language={this.state.tabALanguage}
                     onLanguageChanged={(language) =>
                       languageChanged("tabA", language)
                     }
@@ -294,6 +300,7 @@ class AlignmentView extends React.Component {
                 <Grid item xs={6}>
                   <AlignTab
                     id="tabB"
+                    language={this.state.tabBLanguage}
                     onLanguageChanged={(language) =>
                       languageChanged("tabB", language)
                     }

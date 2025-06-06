@@ -1,6 +1,6 @@
 import * as React from "react"; // Import the React library
 import Grid from "@mui/material/Grid"; // Import Grid component from Material-UI
-import { ThemeProvider, CssBaseline } from '@mui/material';
+import { ThemeProvider, CssBaseline } from "@mui/material";
 
 // Custom components
 import DisceptAppBar from "./components/appbar.js";
@@ -17,7 +17,7 @@ import { EditorView, EditorOnboarding } from "./views/editor.js";
 import { AlignmentView, AlignmentOnboarding } from "./views/alignment.js";
 import { ImageView, ImageOnboarding } from "./views/image.js";
 import { FinalView, FinalOnboarding } from "./views/final.js";
-import theme from './Theme.js';
+import theme from "./Theme.js";
 
 // Define steps of the app, each with a view component and an optional onboarding process
 const steps = [
@@ -69,6 +69,10 @@ class App extends React.Component {
       fileUploaded: null,
       runOnboarding: false,
       stepperOpen: true,
+      alignmentTabALanguage: "",
+      alignmentTabBLanguage: "",
+      editorLanguage: "",
+      imageLanguage: "",
     };
   }
 
@@ -76,6 +80,45 @@ class App extends React.Component {
     // Functional component for rendering the view of the current step
     const Item = ({ step }) => {
       const Component = steps[step].component;
+
+      // Provide additional props for the Alignment view so that the selected
+      // languages persist when navigating through the steps.
+      if (Component === AlignmentView) {
+        return (
+          <Component
+            tabALanguage={this.state.alignmentTabALanguage}
+            tabBLanguage={this.state.alignmentTabBLanguage}
+            onLanguageChanged={(id, lang) =>
+              this.setState(
+                id === "tabA"
+                  ? { alignmentTabALanguage: lang }
+                  : { alignmentTabBLanguage: lang },
+              )
+            }
+          />
+        );
+      }
+
+      if (Component === EditorView) {
+        return (
+          <Component
+            language={this.state.editorLanguage}
+            onLanguageChanged={(lang) =>
+              this.setState({ editorLanguage: lang })
+            }
+          />
+        );
+      }
+
+      if (Component === ImageView) {
+        return (
+          <Component
+            language={this.state.imageLanguage}
+            onLanguageChanged={(lang) => this.setState({ imageLanguage: lang })}
+          />
+        );
+      }
+
       return <Component />; // Render the view component for the current step
     };
 

@@ -17,7 +17,7 @@ import InputLabel from "@mui/material/InputLabel";
 
 import AlignTab from "../components/aligntab.js";
 import OpenSeaDragon from "../components/openseadragon.js";
-import Title from '../components/title.js';
+import Title from "../components/title.js";
 
 import data from "../Data.js";
 
@@ -25,7 +25,7 @@ class ImageView extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      language: "",
+      language: props.language || "",
       selections: [],
       listRefreshNeeded: 0,
       imageURL: "",
@@ -74,6 +74,9 @@ class ImageView extends React.Component {
 
     const languageChanged = (language) => {
       this.setState({ language });
+      if (this.props.onLanguageChanged) {
+        this.props.onLanguageChanged(language);
+      }
     };
 
     const updateSelection = (domElm, teiElm, rootElm) => {
@@ -110,9 +113,9 @@ class ImageView extends React.Component {
     };
 
     const hideImage = (index) => {
-      Array.from(document.getElementsByClassName("previewAlignmentTEI")).forEach(
-        (elm) => elm.classList.remove("previewAlignmentTEI"),
-      );
+      Array.from(
+        document.getElementsByClassName("previewAlignmentTEI"),
+      ).forEach((elm) => elm.classList.remove("previewAlignmentTEI"));
     };
 
     const handleURLChange = (e) => {
@@ -133,6 +136,7 @@ class ImageView extends React.Component {
           <Grid item xs={9}>
             <AlignTab
               id="tab"
+              language={this.state.language}
               onLanguageChanged={languageChanged}
               onSelectionChanged={updateSelection}
             />

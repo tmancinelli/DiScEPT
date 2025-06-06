@@ -17,35 +17,23 @@ class AlignTab extends React.Component {
   constructor(props) {
     super(props);
 
-    // Initial state includes selected language and refresh tracking
-    this.state = { language: "", lastRefresh: 0 };
+    // Initial state includes selected language and refresh tracking.
+    // If a language is provided via props, use it so that the selection is
+    // preserved when the component is remounted.
+    this.state = { language: props.language || "", lastRefresh: 0 };
     // Reference to content container for dynamic updates
     this.contentRef = React.createRef();
   }
 
-  render() {
-    /**
-     * Handles language selection changes in the dropdown.
-     * Updates the selected language in state and triggers content refresh.
-     *
-     * @param {object} event - The change event from the Select component.
-     */
-    const handleChange = (event) => {
-      this.props.onLanguageChanged(event.target.value);
-      this.setState({ language: event.target.value });
-      refresh(event.target.value);
-    };
+  /**
+   * Refreshes the content based on the selected language.
+   * Clears existing content and re-generates it using CETEIHelper, with
+   * alignment logic applied to TEI elements.
+   */
+  refresh(language) {
+    if (!this.contentRef.current) return;
 
-    /**
-     * Configures interactive logic for a TEI element.
-     * Sets click and hover events to change the appearance and behavior of TEI elements.
-     *
-     * @param {string} id - The unique identifier for the element.
-     * @param {HTMLElement} rootElm - The root element of the content.
-     * @param {HTMLElement} domElm - The DOM element being configured.
-     * @param {HTMLElement} teiElm - The TEI element related to domElm.
-     */
-    const alignLogic = (id, rootElm, domElm, teiElm) => {
+    const alignLogic = (rootElm, domElm, teiElm) => {
       domElm.addEventListener("click", (e) => {
         this.props.onSelectionChanged(domElm, teiElm, rootElm);
         e.stopPropagation();
@@ -66,23 +54,29 @@ class AlignTab extends React.Component {
       });
     };
 
-    /**
-     * Refreshes the content based on the selected language.
-     * Clears existing content and re-generates it using CETEIHelper, with
-     * alignment logic applied to TEI elements.
-     *
-     * @param {string} language - The language code to load content for.
-     */
-    const refresh = (language) => {
-      this.contentRef.current.innerHTML = "";
-      this.contentRef.current.append(
-        CETEIHelper.CETEI.makeHTML5(
-          data.getDocumentPerLanguage(language),
-          null,
-          (domElm, teiElm) =>
-            alignLogic(this.props.id, this.contentRef.current, domElm, teiElm),
-        ),
-      );
+    this.contentRef.current.innerHTML = "";
+    this.contentRef.current.append(
+      CETEIHelper.CETEI.makeHTML5(
+        data.getDocumentPerLanguage(language),
+        null,
+        (domElm, teiElm) => alignLogic(this.contentRef.current, domElm, teiElm),
+      ),
+    );
+  }
+
+  componentDidMount() {
+    // Render the initial language (if any) when the component mounts.
+    if (this.state.language) {
+      this.refresh(this.state.language);
+    }
+  }
+
+  render() {
+    // Handles language selection changes in the dropdown and triggers content refresh
+    const handleChange = (event) => {
+      this.props.onLanguageChanged(event.target.value);
+      this.setState({ language: event.target.value });
+      this.refresh(event.target.value);
     };
 
     // Check if a refresh is needed based on props and state
@@ -91,7 +85,7 @@ class AlignTab extends React.Component {
       this.contentRef.current
     ) {
       this.setState({ lastRefresh: this.props.refreshNeeded });
-      refresh(this.state.language);
+      this.refresh(this.state.language);
     }
 
     return (
